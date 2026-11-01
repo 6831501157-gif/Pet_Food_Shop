@@ -1,37 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ร้านอาหารสัตว์ 🌾
 
-## Getting Started
+ระบบหน้าร้านขายอาหารสัตว์ ทำส่งวิชา Database
 
-First, run the development server:
+มีหน้าขายสินค้า (POS) กับหน้าจัดการสินค้า ทุกครั้งที่กดปุ่มที่แก้ข้อมูล จะมีกล่อง **SQL Log** มุมจอบอกว่าส่งคำสั่ง SQL อะไรเข้า MySQL จริงๆ พร้อมค่าที่ใส่ไปและผลลัพธ์
 
-```bash
+## ทำอะไรได้บ้าง
+
+- **ขายสินค้า** เลือกสินค้าลงตะกร้า รับเงินสด คิดเงินทอน พิมพ์ใบเสร็จ
+  - ตัดสต็อกใน transaction และใช้ `SELECT ... FOR UPDATE` ล็อคแถว กันสองเครื่องขายของชิ้นเดียวกันจนสต็อกติดลบ
+- **จัดการสินค้า** เพิ่ม / แก้ / ลบ / ปรับสต็อก ค้นหา และกรองตามหมวดหมู่
+  - ลบสินค้าที่อยู่ในบิลแล้วไม่ได้ เพราะติด foreign key
+- **SQL Log** โชว์คำสั่งที่รันจริงทีละบรรทัด รวมถึง `START TRANSACTION` / `COMMIT` / `ROLLBACK` และ error ของ MySQL
+  - ลากย้ายได้ (จับที่แถบหัว) ดับเบิลคลิกแถบหัวเพื่อกลับมุมขวาล่าง
+
+## ใช้อะไรทำ
+
+- Next.js 15 (App Router) + React 19 + TypeScript
+- Tailwind CSS 4
+- MySQL ต่อผ่าน `mysql2` เขียน SQL เอง ไม่ใช้ ORM
+
+## ติดตั้ง
+
+### ต้องมีก่อน
+
+| โปรแกรม | หมายเหตุ |
+|---|---|
+| [Git](https://git-scm.com/) | |
+| [Node.js](https://nodejs.org/) | เอารุ่น LTS (ขั้นต่ำ 18.18) |
+| [MySQL Community Server](https://dev.mysql.com/downloads/mysql/) | 8.4 LTS ขึ้นไป ตอนลงจะให้ตั้งรหัส root จดไว้ด้วย |
+| MySQL Workbench | ไม่บังคับ ไว้เปิดดูตาราง |
+
+### Windows
+
+ใช้ **Command Prompt** (cmd) นะ ไม่ใช่ PowerShell เพราะ PowerShell ใช้ `<` ในขั้นที่ 3 ไม่ได้
+
+```cmd
+:: 1. โหลดโปรเจ็คกับ package
+git clone <ลิงก์ repo>
+cd animal-feed-shop
+npm install
+
+:: 2. ทำไฟล์ตั้งค่า แล้วแก้ DB_PASSWORD เป็นรหัส root ของ MySQL
+copy .env.example .env.local
+notepad .env.local
+
+:: 3. สร้างฐานข้อมูล (มีตารางและข้อมูลตัวอย่างมาให้)
+mysql -u root -p < database\animal_feed_shop.sql
+
+:: 4. รัน
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+แล้วเปิด http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### macOS / Linux
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+เหมือนกัน ต่างแค่คำสั่ง copy กับเครื่องหมาย path
 
-## Learn More
+```bash
+git clone <ลิงก์ repo>
+cd animal-feed-shop
+npm install
+cp .env.example .env.local        # แล้วแก้ DB_PASSWORD
+mysql -u root -p < database/animal_feed_shop.sql
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## ไฟล์ `.env.local`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| ตัวแปร | ค่าปกติ | |
+|---|---|---|
+| `DB_HOST` | `127.0.0.1` | |
+| `DB_PORT` | `3306` | |
+| `DB_USER` | `root` | |
+| `DB_PASSWORD` | | รหัสที่ตั้งตอนลง MySQL |
+| `DB_NAME` | `animal_feed_shop` | |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ไฟล์นี้ไม่ขึ้น git อยู่แล้ว (มีรหัสผ่าน) แต่ละเครื่องต้องทำเอง
 
-## Deploy on Vercel
+## ฐานข้อมูล
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ไฟล์ `database/animal_feed_shop.sql` export มาจาก `mysqldump` มีครบทั้งตาราง foreign key และข้อมูลตัวอย่าง
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# Pet_Food_Shop
+> ⚠️ ไฟล์นี้มี `DROP TABLE IF EXISTS` ถ้า import ซ้ำ ข้อมูลที่มีอยู่ในฐาน `animal_feed_shop` จะถูกทับหมด
+
+| ตาราง | เก็บอะไร |
+|---|---|
+| `categories` | หมวดหมู่สินค้า (อาหารไก่ อาหารหมู ...) |
+| `products` | สินค้า ราคาขาย และสต็อก |
+| `sales` | หัวบิลขาย (วันที่ ยอดรวม วิธีจ่าย) |
+| `sale_details` | รายการสินค้าในแต่ละบิล |
+| `suppliers` | ผู้จำหน่าย |
+| `purchases`, `purchase_details` | ใบสั่งซื้อ (มีตารางแล้ว ยังไม่มีหน้าเว็บ) |
+
+ถ้าแก้ข้อมูลแล้วอยากอัปเดตไฟล์นี้:
+
+```bash
+mysqldump -u root -p --databases animal_feed_shop --set-gtid-purged=OFF --no-tablespaces --skip-dump-date > database/animal_feed_shop.sql
+```
+
+## โครงสร้างโค้ด
+
+```
+src/
+├── app/
+│   ├── pos/          หน้าขายสินค้า
+│   ├── products/     หน้าจัดการสินค้า
+│   └── api/          API (products, categories, sales)
+├── server/           SQL ทั้งหมดอยู่ที่นี่ แยกตามตาราง
+├── lib/
+│   ├── db.ts         connection pool, runSql(), inTransaction()
+│   └── ...           type, validation, ตัวเรียก API ฝั่งหน้าเว็บ
+├── components/       ของที่ใช้ร่วมกัน (Modal, SqlLogPanel, ...)
+└── hooks/
+```
+
+SQL Log ทำงานยังไง: ทุก query วิ่งผ่าน `runSql()` ใน `src/lib/db.ts` ซึ่งจดคำสั่งไว้ทุกครั้ง แล้ว API ที่เกิดจากการกดปุ่มจะส่งรายการนั้นกลับมาให้หน้าเว็บแสดง ข้อความที่โชว์ได้จาก `mysql2.format()` ตัวเดียวกับที่ใช้แทนค่า `?` ก่อนส่งเข้า MySQL จริง เลยตรงกับที่ฐานข้อมูลได้รับ
+
+## เจอปัญหา
+
+**`'mysql' is not recognized ...`**
+ยังไม่ได้เพิ่ม MySQL ใน PATH ให้เพิ่ม `C:\Program Files\MySQL\MySQL Server 8.4\bin` (เปลี่ยนเลขรุ่นตามที่ลง) แล้วเปิด cmd ใหม่ หรือจะ import ผ่าน Workbench ก็ได้ ที่เมนู Server → Data Import → Import from Self-Contained File
+
+**เว็บเปิดได้แต่ขึ้น "โหลดข้อมูลไม่สำเร็จ"**
+ต่อฐานข้อมูลไม่ได้ เช็คตามนี้:
+- MySQL รันอยู่ไหม (Windows: เปิด Services หา `MySQL84` ดูว่า Running)
+- รหัสใน `.env.local` ถูกไหม
+- import ไฟล์ `.sql` แล้วหรือยัง
+
+แก้ `.env.local` แล้วต้องหยุด `npm run dev` (Ctrl+C) แล้วรันใหม่
+
+**`Access denied for user 'root'@'localhost'`**
+รหัสผ่านใน `.env.local` ผิด
+
+**port 3000 ถูกใช้อยู่**
+รันพอร์ตอื่นแทน `npm run dev -- -p 3001`
