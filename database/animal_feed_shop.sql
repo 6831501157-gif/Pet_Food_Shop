@@ -91,6 +91,7 @@ CREATE TABLE `purchase_details` (
   `product_id` int NOT NULL,
   `quantity` int NOT NULL,
   `cost_price` decimal(10,2) NOT NULL,
+  `expiry_date` date DEFAULT NULL,
   `subtotal` decimal(10,2) NOT NULL,
   PRIMARY KEY (`purchase_detail_id`),
   KEY `purchase_id` (`purchase_id`),
